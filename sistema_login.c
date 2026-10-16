@@ -16,33 +16,35 @@ typedef struct {
 void cadastrarConta(Lista *lista, const char *nome, int senha);
 conta *buscaConta(Lista *lista, const char *nome, int senha);
 void exclusaoConta(Lista *lista, const char *nome, int senha);
+void mostrarContas(Lista *lista);
+void pesquisarUsuario(Lista *lista, const char *nome);
 void limpar();
 
 int main() {
     Lista lista;
 
     char nome[201];
-    int senha, op;
+    int senha, opcao;
 
     lista.inicio = NULL;
     lista.tam = 0;
 
     do {
         puts("\n--- SISTEMA DE LOGIN ---\n");
-        puts("1 - Cadastrar\n2 - Login\n3 - Excluir conta\n4 - Quantidade de usuarios cadastrados\n0 - Sair");
-        scanf("%d", &op);
+        puts("1 - Cadastrar\n2 - Login\n3 - Excluir conta\n4 - Quantidade de usuarios cadastrados");
+        puts("5 - Mostrar todos os usuarios cadastrados\n6 - Pesquisar um usuario\n0 - Sair");
+        scanf("%d", &opcao);
         limpar();
 
-        switch (op) {
+        switch (opcao) {
             case 1:
-                puts("Digite o seu nome completo:");
+                puts("Digite o seu nome:");
                 scanf(" %200[^\n]", nome);
                 limpar();
                 puts("Crie uma senha:");
                 scanf("%d", &senha);
                 limpar();
                 cadastrarConta(&lista, nome, senha);
-                puts("Cadastro feito com sucesso!");
 
                 break;
 
@@ -73,14 +75,27 @@ int main() {
 
                 break;
 
+            case 5:
+                mostrarContas(&lista);
+
+                break;
+
+            case 6:
+                puts("Nome do usuario:");
+                scanf("%200[^\n]", nome);
+                limpar();
+                pesquisarUsuario(&lista, nome);
+
+                break;
+
             default:
-                if (op != 0) {
+                if (opcao != 0) {
                     puts("Opcao invalida!");
                 }
 
                 break;
         }
-    } while (op != 0);
+    } while (opcao != 0);
 
     lista.inicio = NULL;
     lista.tam = 0;
@@ -90,16 +105,24 @@ int main() {
 
 void cadastrarConta(Lista *lista, const char *nome, int senha) {
     conta *nova = (conta *)malloc(sizeof(conta));
+    conta *verificacao = lista->inicio;
 
-    if (nova == NULL) return;
+    while(verificacao != NULL && (strcmp(verificacao->nome, nome)) != 0){
+        verificacao = verificacao->proximo;
+    }if(verificacao != NULL){
+        puts("Esse nome ja esta em uso, tente novamente");
+    }else{
+        if (nova == NULL) return;
 
-    strncpy(nova->nome, nome, sizeof(nova->nome) - 1);
-    nova->nome[sizeof(nova->nome) - 1] = '\0';
+        strncpy(nova->nome, nome, sizeof(nova->nome) - 1);
+        nova->nome[sizeof(nova->nome) - 1] = '\0';
 
-    nova->senha = senha;
-    nova->proximo = lista->inicio;
-    lista->inicio = nova;
-    lista->tam++;
+        nova->senha = senha;
+        nova->proximo = lista->inicio;
+        lista->inicio = nova;
+        lista->tam++;
+        puts("Cadastro feito com sucesso!");
+    }
 }
 
 conta *buscaConta(Lista *lista, const char *nome, int senha) {
@@ -137,6 +160,35 @@ void exclusaoConta(Lista *lista, const char *nome, int senha) {
     if (contaARemover != NULL) {
         free(contaARemover);
         lista->tam--;
+    }
+}
+
+void mostrarContas(Lista *lista){
+    conta *proximo = lista->inicio;
+
+    if(proximo == NULL){
+        puts("Nenhum usuario encontrado");
+    }else{
+        if(lista->tam == 1){
+            printf("Nome: %s", proximo->nome);
+        }else{
+            while(proximo != NULL){
+                printf("Nome: %s\n", proximo->nome);
+                proximo = proximo->proximo;
+            }
+        }
+    }
+}
+
+void pesquisarUsuario(Lista *lista, const char *nome){
+    conta *atual = lista->inicio;
+
+    while(atual != NULL && (strcmp(atual->nome, nome)) != 0){
+        atual = atual->proximo;
+    }if(atual == NULL){
+        puts("Nenhum usuario encontrado com esse nome");
+    }else{
+        printf("Nome: %s", atual->nome);
     }
 }
 
