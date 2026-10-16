@@ -2,22 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct conta{
+typedef struct conta {
     char nome[201];
     int senha;
     struct conta *proximo;
-}conta;
+} conta;
 
-typedef struct{
+typedef struct {
     conta *inicio;
     int tam;
-}Lista;
+} Lista;
 
 void cadastrarConta(Lista *lista, const char *nome, int senha);
-conta *buscaSenha(Lista *lista, int senha);
+conta *buscaConta(Lista *lista, const char *nome, int senha);
+void exclusaoConta(Lista *lista, const char *nome, int senha);
 void limpar();
 
-int main(){
+int main() {
     Lista lista;
 
     char nome[201];
@@ -26,32 +27,60 @@ int main(){
     lista.inicio = NULL;
     lista.tam = 0;
 
-    do{
+    do {
         puts("\n--- SISTEMA DE LOGIN ---\n");
-        puts("1 - Cadastrar\n2 - Login\n0 - Sair");
+        puts("1 - Cadastrar\n2 - Login\n3 - Excluir conta\n4 - Quantidade de usuarios cadastrados\n0 - Sair");
         scanf("%d", &op);
         limpar();
 
-        switch(op){
+        switch (op) {
             case 1:
-                limpar();
                 puts("Digite o seu nome completo:");
-                scanf("%200[^\n]", nome);
+                scanf(" %200[^\n]", nome);
                 limpar();
                 puts("Crie uma senha:");
                 scanf("%d", &senha);
                 limpar();
                 cadastrarConta(&lista, nome, senha);
-                printf("Cadastro feito com sucesso!\nNumero de usuarios cadastrados: %d\n", lista.tam);
+                puts("Cadastro feito com sucesso!");
+
                 break;
+
             case 2:
+                puts("Digite seu nome:");
+                scanf(" %200[^\n]", nome);
+                limpar();
                 puts("Digite sua senha:");
                 scanf("%d", &senha);
                 limpar();
-                buscaSenha(&lista, senha);
+                buscaConta(&lista, nome, senha);
+
+                break;
+
+            case 3:
+                puts("Digite seu nome:");
+                scanf(" %200[^\n]", nome);
+                limpar();
+                puts("Digite sua senha:");
+                scanf("%d", &senha);
+                limpar();
+                exclusaoConta(&lista, nome, senha);
+
+                break;
+
+            case 4:
+                printf("Quantidade de usuarios cadastrados: %d\n", lista.tam);
+
+                break;
+
+            default:
+                if (op != 0) {
+                    puts("Opcao invalida!");
+                }
+
                 break;
         }
-    }while(op != 0);
+    } while (op != 0);
 
     lista.inicio = NULL;
     lista.tam = 0;
@@ -59,37 +88,59 @@ int main(){
     return 0;
 }
 
-void cadastrarConta(Lista *lista, const char *nome, int senha){
+void cadastrarConta(Lista *lista, const char *nome, int senha) {
     conta *nova = (conta *)malloc(sizeof(conta));
 
-    if (nova == NULL) return;  
+    if (nova == NULL) return;
 
     strncpy(nova->nome, nome, sizeof(nova->nome) - 1);
-    nova->nome[sizeof(nova->nome) - 1] = '\0'; 
-    
+    nova->nome[sizeof(nova->nome) - 1] = '\0';
+
     nova->senha = senha;
     nova->proximo = lista->inicio;
     lista->inicio = nova;
     lista->tam++;
 }
 
-conta *buscaSenha(Lista *lista, int senha){
+conta *buscaConta(Lista *lista, const char *nome, int senha) {
     conta *atual = lista->inicio;
 
-    while(atual != NULL && atual->senha != senha){
+    while (atual != NULL && atual->nome != nome && atual->senha != senha) {
         atual = atual->proximo;
     }
 
-    if(atual == NULL){
+    if (atual == NULL) {
         puts("Nenhuma conta foi encontrada!");
-    }else{
-        printf("Nome completo: %s\nSenha: %d", atual->nome, atual->senha);
+    } else {
+        printf("Bem vindo(a), %s!\nSenha: %d", atual->nome, atual->senha);
     }
 
     return atual;
 }
 
-void limpar(){
+void exclusaoConta(Lista *lista, const char *nome, int senha) {
+    conta *inicio = lista->inicio;
+    conta *contaARemover = NULL;
+
+    if (inicio != NULL && lista->inicio->nome == nome && lista->inicio->senha == senha) {
+        contaARemover = lista->inicio;
+        lista->inicio = contaARemover->proximo;
+    } else {
+        while (inicio != NULL && inicio->proximo != NULL && (strcmp(inicio->proximo->nome, nome) != 0 && inicio->proximo->senha != senha)) {
+            inicio = inicio->proximo;
+        }if (inicio != NULL && inicio->proximo != NULL) {
+            contaARemover = inicio->proximo;
+            inicio->proximo = contaARemover->proximo;
+        }
+    }
+
+    if (contaARemover != NULL) {
+        free(contaARemover);
+        lista->tam--;
+    }
+}
+
+void limpar() {
     int c;
-    while((c = getchar ()) != '\n' && c != EOF);
+    while ((c = getchar()) != '\n' && c != EOF);
 }
